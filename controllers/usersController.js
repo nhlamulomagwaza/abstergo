@@ -29,9 +29,9 @@ const registerUser = async (req, res) => {
       .json({ message: "A user with that username already exists" });
   }
 
-  const hashedPwd = await bcrypt.hash(password, 10);
+  //const hashedPwd = await bcrypt.hash(password, 10);
 
-  const user = await Users.create({ username, password: hashedPwd });
+  const user = await Users.create({ username, password: password });
 
   if (user) {
     const accessToken = generateAccessToken(user);
@@ -51,39 +51,41 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   const { username, password } = req.body;
   const user = await Users.findOne({ username });
-  let accessToken;
-  let refreshToken;
+console.log(user)
   if (user && user._id) {
-    accessToken = generateAccessToken(user);
-    refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-  } else {
-    return res.status(401).json({ message: "Username or password is incorrect" });
-  }
+    console.log('Input password:', password);
+    console.log('Hashed password in database:', user.password);
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('Is password valid?', isValidPassword);
+    if (isValidPassword) {
+      // Generate tokens only if password is correct
+      const accessToken = generateAccessToken(user);
+      const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
 
-  if (user && bcrypt.compare(password, user.password)) {
-    // Check if the user already has a token in the database
-    const existingToken = await Token.findOne({ userId: user._id });
-    if (existingToken) {
-      // Update the existing token
-      existingToken.token = accessToken;
-      await existingToken.save();
+      // Check if the user already has a token in the database
+      const existingToken = await Token.findOne({ userId: user._id });
+      if (existingToken) {
+        // Update the existing token
+        existingToken.token = accessToken;
+        await existingToken.save();
+      } else {
+        // Create a new token
+        await Token.create({ token: accessToken, userId: user._id });
+      }
+
+      // Save the refresh token in the database
+      await RefreshToken.create({ refreshToken: refreshToken, userId: user._id });
+      return res.json({
+        user,
+        accessToken
+      });
     } else {
-      // Create a new token
-      await Token.create({ token: accessToken, userId: user._id });
+      return res.status(401).json({ message: "Username or password is incorrect" });
     }
-
-    // Save the refresh token in the database
-    await RefreshToken.create({ refreshToken: refreshToken, userId: user._id });
-    return res.json({
-      user,
-      accessToken
-    });
   } else {
     return res.status(401).json({ message: "Username or password is incorrect" });
   }
 };
-
-
 
 const logoutUser = async (req, res) => {
   const token = req.headers.authorization.split(" ")[1]; // Extract the token from the request headers

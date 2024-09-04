@@ -297,7 +297,7 @@ const Signup: React.FC = () => {
               <div className="demo-header">
 
                 <h1 className="demo-title">Demo Account</h1>
-                <p className="demo-user">username: marvinmendes</p>
+                <p className="demo-user">username: arthurmendes</p>
                 <p className="demo-pin">password: passkey1234</p>
               </div>
             </div>
