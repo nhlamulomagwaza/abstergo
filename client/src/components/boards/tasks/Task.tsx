@@ -47,7 +47,7 @@ const Task = () => {
           setSelectedTask({ ...selectedTask, status: newStatus, columnId: newColumnId });
 
           // Update the newStatus state with the new column ID
-          setNewStatus(newColumnId);
+       //   setNewStatus(newColumnId);
 
           // Updating the task position in the column
           const updatedBoard = { ...selectedBoard };

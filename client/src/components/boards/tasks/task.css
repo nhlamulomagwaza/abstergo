@@ -38,7 +38,7 @@
 .single-task-card{
 
     position: relative;
-    width:100%;
+    width:500px;
     height:fit-content;
  
 
@@ -121,3 +121,13 @@
 
     background-color: red;
   }
+
+@media (max-width:600px){
+
+
+
+  .single-task-card{
+
+    width:90vw;
+    margin: 0 auto;
+  }}
